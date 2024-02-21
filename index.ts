@@ -16,12 +16,7 @@ const main = async () => {
   const defaultSecurityGroup = securitygroup.NewDefaultSecurityGroup()
 
   // NOTE: Services initialization
-  new ecsservice.Service(
-    config,
-    `${stack}-x-api`,
-    defaultVpc,
-    defaultSubnets,
-  ).new({
+  new ecsservice.Service(config, `${stack}-x`, defaultVpc, defaultSubnets).new({
     loadBalancer: {
       targetGroupPort: 80,
       isHttpsEnabled: false,
@@ -59,11 +54,11 @@ const main = async () => {
 
   new lambdaservice.Service(config, `${stack}-x`).new({
     language: lambda.JS,
-    isFifo: true,
-    isProd: true,
-    isPublic: true,
+    isFifo: false,
+    isProd: false,
+    isPublic: false,
     variables: {
-      url: 'https://example.com',
+      url: 'https://httpbin.dev/post',
       token: '123456789',
     },
   })

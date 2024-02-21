@@ -24,12 +24,17 @@ const NewFargateService = (
       containerPort: number
       hostPort: number
     }>
+    secrets?:
+      | pulumi.Input<
+          pulumi.Input<awsx.types.input.ecs.TaskDefinitionSecretArgs>[]
+        >
+      | undefined
   },
   loadBalancer: aws.lb.LoadBalancer,
   targetGroup: aws.lb.TargetGroup,
   tags: {
     project: string
-  }
+  },
 ) => {
   return new awsx.ecs.FargateService(name, {
     name: name,
@@ -43,6 +48,7 @@ const NewFargateService = (
         cpu: containerDefinition.cpu,
         memory: containerDefinition.memory,
         portMappings: containerDefinition.portMappings,
+        secrets: containerDefinition.secrets,
         healthCheck: {
           command: ['CMD-SHELL', 'curl -f http://localhost/ || exit 1'],
           interval: 10,
@@ -76,7 +82,7 @@ const NewAutoScalingTarget = (
   minCapacity: number,
   maxCapacity: number,
   ecsCluster: aws.ecs.Cluster,
-  ecsService: awsx.ecs.FargateService
+  ecsService: awsx.ecs.FargateService,
 ) => {
   return new aws.appautoscaling.Target(name, {
     serviceNamespace: 'ecs',
@@ -94,7 +100,7 @@ const NewAutoScalingPolicy = (
   predefinedMetricType: string,
   targetValue: number,
   scaleInCooldown: number,
-  scaleOutCooldown: number
+  scaleOutCooldown: number,
 ) => {
   return new aws.appautoscaling.Policy(name, {
     name: name,
