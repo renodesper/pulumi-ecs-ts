@@ -1,13 +1,13 @@
-import * as pulumi from '@pulumi/pulumi';
-import * as aws from '@pulumi/aws';
-import * as awsx from '@pulumi/awsx';
+import * as pulumi from '@pulumi/pulumi'
+import * as aws from '@pulumi/aws'
+import * as awsx from '@pulumi/awsx'
 
-const NewCluster = (name: string, tags: {}) => {
+const NewCluster = (name: string, tags: { [key: string]: string }) => {
   return new aws.ecs.Cluster(name, {
     name: name,
     tags: tags,
-  });
-};
+  })
+}
 
 const NewFargateService = (
   name: string,
@@ -15,21 +15,21 @@ const NewFargateService = (
   cluster: aws.ecs.Cluster,
   desiredCount: number,
   containerDefinition: {
-    image: awsx.ecr.Image;
-    name: string;
-    cpu: number;
-    memory: number;
-    port: number;
+    image: awsx.ecr.Image
+    name: string
+    cpu: number
+    memory: number
+    port: number
     portMappings: Array<{
-      containerPort: number;
-      hostPort: number;
-    }>;
+      containerPort: number
+      hostPort: number
+    }>
   },
   loadBalancer: aws.lb.LoadBalancer,
   targetGroup: aws.lb.TargetGroup,
   tags: {
-    project: string;
-  },
+    project: string
+  }
 ) => {
   return new awsx.ecs.FargateService(name, {
     name: name,
@@ -54,12 +54,12 @@ const NewFargateService = (
       },
     },
     loadBalancers: [
-      targetGroup.arn.apply((arn) => {
+      targetGroup.arn.apply(arn => {
         return {
           targetGroupArn: arn,
           containerName: containerDefinition.name,
           containerPort: containerDefinition.port,
-        };
+        }
       }),
     ],
     networkConfiguration: {
@@ -68,15 +68,15 @@ const NewFargateService = (
       assignPublicIp: true,
     },
     tags: tags,
-  });
-};
+  })
+}
 
 const NewAutoScalingTarget = (
   name: string,
   minCapacity: number,
   maxCapacity: number,
   ecsCluster: aws.ecs.Cluster,
-  ecsService: awsx.ecs.FargateService,
+  ecsService: awsx.ecs.FargateService
 ) => {
   return new aws.appautoscaling.Target(name, {
     serviceNamespace: 'ecs',
@@ -84,8 +84,8 @@ const NewAutoScalingTarget = (
     scalableDimension: 'ecs:service:DesiredCount',
     minCapacity: minCapacity,
     maxCapacity: maxCapacity,
-  });
-};
+  })
+}
 
 const NewAutoScalingPolicy = (
   name: string,
@@ -94,7 +94,7 @@ const NewAutoScalingPolicy = (
   predefinedMetricType: string,
   targetValue: number,
   scaleInCooldown: number,
-  scaleOutCooldown: number,
+  scaleOutCooldown: number
 ) => {
   return new aws.appautoscaling.Policy(name, {
     name: name,
@@ -110,12 +110,12 @@ const NewAutoScalingPolicy = (
       scaleInCooldown: scaleInCooldown,
       scaleOutCooldown: scaleOutCooldown,
     },
-  });
-};
+  })
+}
 
 export {
   NewCluster,
   NewFargateService,
   NewAutoScalingTarget,
   NewAutoScalingPolicy,
-};
+}

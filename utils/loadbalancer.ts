@@ -1,11 +1,11 @@
-import * as aws from '@pulumi/aws';
+import * as aws from '@pulumi/aws'
 
 const NewLoadBalancer = (
   name: string,
   subnets: aws.ec2.GetSubnetsResult,
   securityGroup: aws.ec2.SecurityGroup,
   tags: {
-    project: string;
+    project: string
   },
 ) => {
   return new aws.lb.LoadBalancer(name, {
@@ -16,14 +16,14 @@ const NewLoadBalancer = (
     subnets: subnets.ids,
     securityGroups: [securityGroup.id],
     tags: tags,
-  });
-};
+  })
+}
 
 const NewTargetGroup = (
   name: string,
   vpc: aws.ec2.GetVpcResult,
   targetGroupPort: number,
-  tags: object,
+  tags: { [key: string]: string },
 ) => {
   return new aws.lb.TargetGroup(name, {
     name: name,
@@ -42,19 +42,19 @@ const NewTargetGroup = (
       unhealthyThreshold: 2,
     },
     tags: tags,
-  });
-};
+  })
+}
 
 const NewListeners = (
   name: string,
   loadBalancer: aws.lb.LoadBalancer,
   isHttpsEnabled: boolean,
   opts: {
-    targetGroup: aws.lb.TargetGroup;
-    certificateArn?: string;
+    targetGroup: aws.lb.TargetGroup
+    certificateArn?: string
   },
 ) => {
-  const listeners: aws.lb.Listener[] = [];
+  const listeners: aws.lb.Listener[] = []
 
   if (isHttpsEnabled) {
     const httpListener = NewHttpListener(
@@ -62,38 +62,38 @@ const NewListeners = (
       loadBalancer,
       isHttpsEnabled,
       opts,
-    );
-    listeners.push(httpListener);
+    )
+    listeners.push(httpListener)
 
     const httpsListener = NewHttpsListener(
       `${name}-https`,
       loadBalancer,
       opts.targetGroup,
       opts.certificateArn,
-    );
-    listeners.push(httpsListener);
+    )
+    listeners.push(httpsListener)
   } else {
     const httpListener = NewHttpListener(
       `${name}-http`,
       loadBalancer,
       isHttpsEnabled,
       opts,
-    );
-    listeners.push(httpListener);
+    )
+    listeners.push(httpListener)
   }
 
-  return listeners;
-};
+  return listeners
+}
 
 const NewHttpListener = (
   name: string,
   loadBalancer: aws.lb.LoadBalancer,
   isHttpsEnabled: boolean,
   opts: {
-    targetGroup: aws.lb.TargetGroup;
+    targetGroup: aws.lb.TargetGroup
   },
 ) => {
-  let defaultActions;
+  let defaultActions
   if (isHttpsEnabled) {
     defaultActions = [
       {
@@ -104,14 +104,14 @@ const NewHttpListener = (
           statusCode: 'HTTP_301',
         },
       },
-    ];
+    ]
   } else {
     defaultActions = [
       {
         type: 'forward',
         targetGroupArn: opts.targetGroup.arn,
       },
-    ];
+    ]
   }
 
   return new aws.lb.Listener(name, {
@@ -119,8 +119,8 @@ const NewHttpListener = (
     port: 80,
     loadBalancerArn: loadBalancer.arn,
     defaultActions: defaultActions,
-  });
-};
+  })
+}
 
 const NewHttpsListener = (
   name: string,
@@ -140,7 +140,7 @@ const NewHttpsListener = (
         targetGroupArn: targetGroup.arn,
       },
     ],
-  });
-};
+  })
+}
 
-export { NewLoadBalancer, NewTargetGroup, NewListeners };
+export { NewLoadBalancer, NewTargetGroup, NewListeners }
