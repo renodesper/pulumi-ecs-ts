@@ -2,7 +2,7 @@ import * as aws from '@pulumi/aws';
 
 const NewLoadBalancer = (
   name: string,
-  subnets: Promise<aws.ec2.GetSubnetsResult>,
+  subnets: aws.ec2.GetSubnetsResult,
   securityGroup: aws.ec2.SecurityGroup,
   tags: {
     project: string;
@@ -13,7 +13,7 @@ const NewLoadBalancer = (
     loadBalancerType: 'application',
     internal: false,
     enableDeletionProtection: false,
-    subnets: subnets.then((subnets) => subnets.ids),
+    subnets: subnets.ids,
     securityGroups: [securityGroup.id],
     tags: tags,
   });
@@ -21,7 +21,7 @@ const NewLoadBalancer = (
 
 const NewTargetGroup = (
   name: string,
-  vpc: Promise<aws.ec2.GetVpcResult>,
+  vpc: aws.ec2.GetVpcResult,
   targetGroupPort: number,
   tags: {}
 ) => {
@@ -30,7 +30,7 @@ const NewTargetGroup = (
     targetType: 'ip',
     protocol: 'HTTP',
     port: targetGroupPort, // NOTE: Port on which targets receive traffic
-    vpcId: vpc.then((vpc) => vpc.id),
+    vpcId: vpc.id,
     healthCheck: {
       protocol: 'HTTP',
       port: 'traffic-port',

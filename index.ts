@@ -1,50 +1,58 @@
 import * as pulumi from '@pulumi/pulumi';
 
-import { GetDefaultVpc, GetDefaultSubnets } from './utils/vpc';
-import { NewDefaultSecurityGroup } from './utils/securitygroup';
-import { EcsService } from './services/ecs';
+import * as vpc from './utils/vpc';
+import * as securitygroup from './utils/securitygroup';
+import * as ecsservice from './services/ecs/service';
 
-const config = new pulumi.Config();
-const stack = pulumi.getStack();
+const main = async () => {
+  const config = new pulumi.Config();
+  const stack = pulumi.getStack();
 
-// NOTE: Default resources initialization
-const defaultVpc = GetDefaultVpc();
-const defaultSubnets = GetDefaultSubnets(defaultVpc);
-const defaultSecurityGroup = NewDefaultSecurityGroup();
+  const defaultVpc = await vpc.GetDefaultVpc();
+  const defaultSubnets = await vpc.GetDefaultSubnets(defaultVpc);
+  const defaultSecurityGroup = securitygroup.NewDefaultSecurityGroup();
 
-// NOTE: Services initialization
-new EcsService(config, `${stack}-x-api`, defaultVpc, defaultSubnets).new({
-  loadBalancer: {
-    targetGroupPort: 80,
-    isHttpsEnabled: false,
-    securityGroup: defaultSecurityGroup,
-  },
-  ecs: {
-    cpu: 128,
-    memory: 512,
-    desiredCount: 1,
-    port: 80,
-  },
-  autoscaling: {
-    minCapacity: 1,
-    maxCapacity: 10,
-    policies: [
-      {
-        type: `memory`,
-        policyType: 'TargetTrackingScaling',
-        predefinedMetricType: 'ECSServiceAverageMemoryUtilization',
-        targetValue: 80,
-        scaleInCooldown: 30,
-        scaleOutCooldown: 60,
-      },
-      {
-        type: `cpu`,
-        policyType: 'TargetTrackingScaling',
-        predefinedMetricType: 'ECSServiceAverageCPUUtilization',
-        targetValue: 70,
-        scaleInCooldown: 30,
-        scaleOutCooldown: 60,
-      },
-    ],
-  },
-});
+  // NOTE: Services initialization
+  new ecsservice.Service(
+    config,
+    `${stack}-x-api`,
+    defaultVpc,
+    defaultSubnets
+  ).new({
+    loadBalancer: {
+      targetGroupPort: 80,
+      isHttpsEnabled: false,
+      securityGroup: defaultSecurityGroup,
+    },
+    ecs: {
+      cpu: 128,
+      memory: 512,
+      desiredCount: 1,
+      port: 80,
+    },
+    autoscaling: {
+      minCapacity: 1,
+      maxCapacity: 10,
+      policies: [
+        {
+          type: `memory`,
+          policyType: 'TargetTrackingScaling',
+          predefinedMetricType: 'ECSServiceAverageMemoryUtilization',
+          targetValue: 80,
+          scaleInCooldown: 30,
+          scaleOutCooldown: 60,
+        },
+        {
+          type: `cpu`,
+          policyType: 'TargetTrackingScaling',
+          predefinedMetricType: 'ECSServiceAverageCPUUtilization',
+          targetValue: 70,
+          scaleInCooldown: 30,
+          scaleOutCooldown: 60,
+        },
+      ],
+    },
+  });
+};
+
+main();

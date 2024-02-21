@@ -2,7 +2,7 @@ import * as pulumi from '@pulumi/pulumi';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 
-const NewEcsCluster = (name: string, tags: {}) => {
+const NewCluster = (name: string, tags: {}) => {
   return new aws.ecs.Cluster(name, {
     name: name,
     tags: tags,
@@ -11,7 +11,7 @@ const NewEcsCluster = (name: string, tags: {}) => {
 
 const NewFargateService = (
   name: string,
-  subnets: Promise<aws.ec2.GetSubnetsResult>,
+  subnets: aws.ec2.GetSubnetsResult,
   cluster: aws.ecs.Cluster,
   desiredCount: number,
   containerDefinition: {
@@ -63,7 +63,7 @@ const NewFargateService = (
       }),
     ],
     networkConfiguration: {
-      subnets: subnets.then((subnets) => subnets.ids),
+      subnets: subnets.ids,
       securityGroups: [loadBalancer.securityGroups[0]],
       assignPublicIp: true,
     },
@@ -114,7 +114,7 @@ const NewAutoScalingPolicy = (
 };
 
 export {
-  NewEcsCluster,
+  NewCluster,
   NewFargateService,
   NewAutoScalingTarget,
   NewAutoScalingPolicy,

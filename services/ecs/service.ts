@@ -2,17 +2,8 @@ import * as pulumi from '@pulumi/pulumi';
 import * as aws from '@pulumi/aws';
 import * as awsx from '@pulumi/awsx';
 
-import {
-  NewLoadBalancer,
-  NewTargetGroup,
-  NewListeners,
-} from '../utils/loadbalancer';
-import {
-  NewEcsCluster,
-  NewFargateService,
-  NewAutoScalingTarget,
-  NewAutoScalingPolicy,
-} from '../utils/ecs';
+import * as loadbalancer from '../../utils/loadbalancer';
+import * as ecs from '../../utils/ecs';
 
 interface NewServiceArgs {
   loadBalancer: {
@@ -40,52 +31,36 @@ interface NewServiceArgs {
   };
 }
 
-class EcsService {
+class Service {
   config: pulumi.Config;
   name: string;
-  vpc: Promise<aws.ec2.GetVpcResult>;
-  subnets: Promise<aws.ec2.GetSubnetsResult>;
-  loadBalancer: {
-    loadBalancerName: string;
-    targetGroupName: string;
-  };
-  ecr: {
-    repositoryName: string;
-    imageName: string;
-  };
-  ecs: {
-    clusterName: string;
-    serviceName: string;
-  };
-  autoscaling?: {
-    targetName: string;
-  };
+  vpc: aws.ec2.GetVpcResult;
+  subnets: aws.ec2.GetSubnetsResult;
+  loadBalancerName: string;
+  targetGroupName: string;
+  ecrRepositoryName: string;
+  ecrImageName: string;
+  ecsClusterName: string;
+  ecsServiceName: string;
+  autoscalingTargetName?: string;
 
   constructor(
     config: pulumi.Config,
     name: string,
-    vpc: Promise<aws.ec2.GetVpcResult>,
-    subnets: Promise<aws.ec2.GetSubnetsResult>
+    vpc: aws.ec2.GetVpcResult,
+    subnets: aws.ec2.GetSubnetsResult
   ) {
     this.config = config;
     this.name = name;
     this.vpc = vpc;
     this.subnets = subnets;
-    this.loadBalancer = {
-      loadBalancerName: `${name}-lb`,
-      targetGroupName: `${name}-tg`,
-    };
-    this.ecr = {
-      repositoryName: `${name}-repo`,
-      imageName: `${name}-img`,
-    };
-    this.ecs = {
-      clusterName: `${name}-cluster`,
-      serviceName: `${name}-svc`,
-    };
-    this.autoscaling = {
-      targetName: `${name}-autoscaling`,
-    };
+    this.loadBalancerName = `${name}-lb`;
+    this.targetGroupName = `${name}-tg`;
+    this.ecrRepositoryName = `${name}-repo`;
+    this.ecrImageName = `${name}-img`;
+    this.ecsClusterName = `${name}-cluster`;
+    this.ecsServiceName = `${name}-svc`;
+    this.autoscalingTargetName = `${name}-autoscaling`;
   }
 
   new(args: NewServiceArgs) {
@@ -93,39 +68,39 @@ class EcsService {
       project: this.name,
     };
 
-    const loadBalancer = NewLoadBalancer(
-      this.loadBalancer.loadBalancerName,
+    const loadBalancer = loadbalancer.NewLoadBalancer(
+      this.loadBalancerName,
       this.subnets,
       args.loadBalancer.securityGroup,
       tags
     );
 
-    const targetGroup = NewTargetGroup(
-      this.loadBalancer.targetGroupName,
+    const targetGroup = loadbalancer.NewTargetGroup(
+      this.targetGroupName,
       this.vpc,
       args.loadBalancer.targetGroupPort,
       tags
     );
 
     const listenerOpts = { targetGroup: targetGroup };
-    NewListeners(
-      this.loadBalancer.loadBalancerName,
+    loadbalancer.NewListeners(
+      this.loadBalancerName,
       loadBalancer,
       args.loadBalancer.isHttpsEnabled,
       listenerOpts
     );
 
-    const ecrRepository = new awsx.ecr.Repository(this.ecr.repositoryName, {
+    const ecrRepository = new awsx.ecr.Repository(this.ecrRepositoryName, {
       forceDelete: true,
       tags: tags,
     });
-    const ecrImage = new awsx.ecr.Image(this.ecr.imageName, {
+    const ecrImage = new awsx.ecr.Image(this.ecrImageName, {
       repositoryUrl: ecrRepository.url,
-      context: './app',
+      context: './services/ecs/app',
       platform: 'linux/amd64', // NOTE: 'linux/arm64' or 'linux/amd64'
     });
 
-    const ecsCluster = NewEcsCluster(this.ecs.clusterName, tags);
+    const ecsCluster = ecs.NewCluster(this.ecsClusterName, tags);
 
     const containerDefinition = {
       image: ecrImage,
@@ -144,8 +119,8 @@ class EcsService {
         },
       ],
     };
-    const ecsService = NewFargateService(
-      this.ecs.serviceName,
+    const ecsService = ecs.NewFargateService(
+      this.ecsServiceName,
       this.subnets,
       ecsCluster,
       args.ecs.desiredCount,
@@ -155,9 +130,9 @@ class EcsService {
       tags
     );
 
-    if (this.autoscaling && args.autoscaling) {
-      const targetName = this.autoscaling.targetName ?? '';
-      const scalingTarget = NewAutoScalingTarget(
+    if (this.autoscalingTargetName && args.autoscaling) {
+      const targetName = this.autoscalingTargetName ?? '';
+      const scalingTarget = ecs.NewAutoScalingTarget(
         targetName,
         args.autoscaling.minCapacity,
         args.autoscaling.maxCapacity,
@@ -165,7 +140,7 @@ class EcsService {
         ecsService
       );
       args.autoscaling.policies.forEach((policy) => {
-        NewAutoScalingPolicy(
+        ecs.NewAutoScalingPolicy(
           `${targetName}-${policy.type}`,
           scalingTarget,
           policy.policyType,
@@ -179,4 +154,4 @@ class EcsService {
   }
 }
 
-export { EcsService };
+export { Service };
