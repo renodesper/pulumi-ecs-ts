@@ -1,6 +1,6 @@
-# Pulumi ECS TS
+# Pulumi (typescript)
 
-This project was created to accommodate the need for a bootstrap structure for my future ECS project that will be deployed to AWS.
+This project was created to accommodate the need for a bootstrap structure for my future AWS project.
 
 ## Owner
 

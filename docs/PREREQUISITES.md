@@ -2,7 +2,11 @@
 
 - Install NodeJS
 
-  We use version v21.6.1. Follow [NodeJS installation guideline](https://nodejs.org/en/download).
+  We use version ^18. Follow [NodeJS installation guideline](https://nodejs.org/en/download).
+
+- Install Typescript
+
+  We use version ^4.0.0. Follow [Typescript installation guideline](https://www.typescriptlang.org/download).
 
 - Install Pulumi
 
