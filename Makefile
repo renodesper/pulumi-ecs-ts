@@ -10,6 +10,18 @@ up:
 down:
 	pulumi down
 
+.PHONY: stack.dev.destroy
+stack.dev.destroy:
+	pulumi stack rm dev
+
+.PHONY: stack.stage.destroy
+stack.stage.destroy:
+	pulumi stack rm stage
+
+.PHONY: stack.prod.destroy
+stack.prod.destroy:
+	pulumi stack rm prod
+
 .PHONY: lambda.build.go
 lambda.build.go:
 	rm -f services/lambda/function/app.zip && \
