@@ -5,6 +5,7 @@ import { NewDefaultSecurityGroup } from './utils/securitygroup';
 import { EcsService } from './services/ecs';
 
 const config = new pulumi.Config();
+const stack = pulumi.getStack();
 
 // NOTE: Default resources initialization
 const defaultVpc = GetDefaultVpc();
@@ -12,7 +13,7 @@ const defaultSubnets = GetDefaultSubnets(defaultVpc);
 const defaultSecurityGroup = NewDefaultSecurityGroup();
 
 // NOTE: Services initialization
-new EcsService(config, 'x-api', defaultVpc, defaultSubnets).new({
+new EcsService(config, `${stack}-x-api`, defaultVpc, defaultSubnets).new({
   loadBalancer: {
     targetGroupPort: 80,
     isHttpsEnabled: false,
