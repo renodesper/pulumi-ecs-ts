@@ -48,7 +48,7 @@ class Service {
     config: pulumi.Config,
     name: string,
     vpc: aws.ec2.GetVpcResult,
-    subnets: aws.ec2.GetSubnetsResult
+    subnets: aws.ec2.GetSubnetsResult,
   ) {
     this.config = config;
     this.name = name;
@@ -72,14 +72,14 @@ class Service {
       this.loadBalancerName,
       this.subnets,
       args.loadBalancer.securityGroup,
-      tags
+      tags,
     );
 
     const targetGroup = loadbalancer.NewTargetGroup(
       this.targetGroupName,
       this.vpc,
       args.loadBalancer.targetGroupPort,
-      tags
+      tags,
     );
 
     const listenerOpts = { targetGroup: targetGroup };
@@ -87,7 +87,7 @@ class Service {
       this.loadBalancerName,
       loadBalancer,
       args.loadBalancer.isHttpsEnabled,
-      listenerOpts
+      listenerOpts,
     );
 
     const ecrRepository = new awsx.ecr.Repository(this.ecrRepositoryName, {
@@ -127,7 +127,7 @@ class Service {
       containerDefinition,
       loadBalancer,
       targetGroup,
-      tags
+      tags,
     );
 
     if (this.autoscalingTargetName && args.autoscaling) {
@@ -137,7 +137,7 @@ class Service {
         args.autoscaling.minCapacity,
         args.autoscaling.maxCapacity,
         ecsCluster,
-        ecsService
+        ecsService,
       );
       args.autoscaling.policies.forEach((policy) => {
         ecs.NewAutoScalingPolicy(
@@ -147,7 +147,7 @@ class Service {
           policy.predefinedMetricType,
           policy.targetValue,
           policy.scaleInCooldown,
-          policy.scaleOutCooldown
+          policy.scaleOutCooldown,
         );
       });
     }

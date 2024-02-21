@@ -29,7 +29,7 @@ const NewFargateService = (
   targetGroup: aws.lb.TargetGroup,
   tags: {
     project: string;
-  }
+  },
 ) => {
   return new awsx.ecs.FargateService(name, {
     name: name,
@@ -76,7 +76,7 @@ const NewAutoScalingTarget = (
   minCapacity: number,
   maxCapacity: number,
   ecsCluster: aws.ecs.Cluster,
-  ecsService: awsx.ecs.FargateService
+  ecsService: awsx.ecs.FargateService,
 ) => {
   return new aws.appautoscaling.Target(name, {
     serviceNamespace: 'ecs',
@@ -94,7 +94,7 @@ const NewAutoScalingPolicy = (
   predefinedMetricType: string,
   targetValue: number,
   scaleInCooldown: number,
-  scaleOutCooldown: number
+  scaleOutCooldown: number,
 ) => {
   return new aws.appautoscaling.Policy(name, {
     name: name,

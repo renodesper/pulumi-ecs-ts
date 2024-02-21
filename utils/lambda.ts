@@ -10,7 +10,7 @@ const NewFunctionUrl = (name: string, args: aws.lambda.FunctionUrlArgs) => {
 
 const NewEventSourceMapping = (
   name: string,
-  args: aws.lambda.EventSourceMappingArgs
+  args: aws.lambda.EventSourceMappingArgs,
 ) => {
   return new aws.lambda.EventSourceMapping(name, args);
 };

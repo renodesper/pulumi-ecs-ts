@@ -17,7 +17,7 @@ const main = async () => {
     config,
     `${stack}-x-api`,
     defaultVpc,
-    defaultSubnets
+    defaultSubnets,
   ).new({
     loadBalancer: {
       targetGroupPort: 80,

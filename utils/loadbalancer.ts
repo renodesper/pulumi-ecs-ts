@@ -6,7 +6,7 @@ const NewLoadBalancer = (
   securityGroup: aws.ec2.SecurityGroup,
   tags: {
     project: string;
-  }
+  },
 ) => {
   return new aws.lb.LoadBalancer(name, {
     name: name,
@@ -23,7 +23,7 @@ const NewTargetGroup = (
   name: string,
   vpc: aws.ec2.GetVpcResult,
   targetGroupPort: number,
-  tags: {}
+  tags: object,
 ) => {
   return new aws.lb.TargetGroup(name, {
     name: name,
@@ -52,16 +52,16 @@ const NewListeners = (
   opts: {
     targetGroup: aws.lb.TargetGroup;
     certificateArn?: string;
-  }
+  },
 ) => {
-  let listeners: aws.lb.Listener[] = [];
+  const listeners: aws.lb.Listener[] = [];
 
   if (isHttpsEnabled) {
     const httpListener = NewHttpListener(
       `${name}-http`,
       loadBalancer,
       isHttpsEnabled,
-      opts
+      opts,
     );
     listeners.push(httpListener);
 
@@ -69,7 +69,7 @@ const NewListeners = (
       `${name}-https`,
       loadBalancer,
       opts.targetGroup,
-      opts.certificateArn
+      opts.certificateArn,
     );
     listeners.push(httpsListener);
   } else {
@@ -77,7 +77,7 @@ const NewListeners = (
       `${name}-http`,
       loadBalancer,
       isHttpsEnabled,
-      opts
+      opts,
     );
     listeners.push(httpListener);
   }
@@ -91,7 +91,7 @@ const NewHttpListener = (
   isHttpsEnabled: boolean,
   opts: {
     targetGroup: aws.lb.TargetGroup;
-  }
+  },
 ) => {
   let defaultActions;
   if (isHttpsEnabled) {
@@ -126,7 +126,7 @@ const NewHttpsListener = (
   name: string,
   loadBalancer: aws.lb.LoadBalancer,
   targetGroup: aws.lb.TargetGroup,
-  certificateArn: string | undefined
+  certificateArn: string | undefined,
 ) => {
   return new aws.lb.Listener(name, {
     loadBalancerArn: loadBalancer.arn,

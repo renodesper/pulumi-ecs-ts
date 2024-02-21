@@ -10,7 +10,9 @@
     "pretty": true,
     "noFallthroughCasesInSwitch": true,
     "noImplicitReturns": true,
-    "forceConsistentCasingInFileNames": true,
+    "forceConsistentCasingInFileNames": true
   },
-  "files": ["index.ts"]
+  "files": ["index.ts"],
+  "include": ["utils"],
+  "exclude": ["node_modules"]
 }
