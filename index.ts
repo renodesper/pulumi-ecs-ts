@@ -1,11 +1,11 @@
 import * as pulumi from '@pulumi/pulumi'
 
-import * as vpc from './utils/vpc'
-import * as securitygroup from './utils/securitygroup'
-
-import * as lambda from './utils/lambda'
-import * as ecsservice from './services/ecs/service'
-import * as lambdaservice from './services/lambda/service'
+import * as iam from './src/utils/aws/iam'
+import * as lambda from './src/utils/aws/lambda'
+import * as securitygroup from './src/utils/aws/securitygroup'
+import * as vpc from './src/utils/aws/vpc'
+import * as ecsservice from './src/services/ecs/service'
+import * as lambdaservice from './src/services/lambda/service'
 
 const main = async () => {
   const config = new pulumi.Config()
@@ -15,53 +15,99 @@ const main = async () => {
   const defaultSubnets = await vpc.GetDefaultSubnets(defaultVpc)
   const defaultSecurityGroup = securitygroup.NewDefaultSecurityGroup()
 
-  // NOTE: Services initialization
-  new ecsservice.Service(config, `${stack}-x`, defaultVpc, defaultSubnets).new({
-    loadBalancer: {
-      targetGroupPort: 80,
-      isHttpsEnabled: false,
-      securityGroup: defaultSecurityGroup,
-    },
-    ecs: {
-      cpu: 128,
-      memory: 512,
-      desiredCount: 1,
-      port: 80,
-    },
-    autoscaling: {
-      minCapacity: 1,
-      maxCapacity: 10,
-      policies: [
-        {
-          type: `memory`,
-          policyType: 'TargetTrackingScaling',
-          predefinedMetricType: 'ECSServiceAverageMemoryUtilization',
-          targetValue: 80,
-          scaleInCooldown: 30,
-          scaleOutCooldown: 60,
-        },
-        {
-          type: `cpu`,
-          policyType: 'TargetTrackingScaling',
-          predefinedMetricType: 'ECSServiceAverageCPUUtilization',
-          targetValue: 70,
-          scaleInCooldown: 30,
-          scaleOutCooldown: 60,
-        },
-      ],
-    },
-  })
+  // NOTE: Initialize new ECS service called "x"
+  // const xEcs = new ecsservice.Service(
+  //   config,
+  //   stack,
+  //   'x',
+  //   defaultVpc,
+  //   defaultSubnets
+  // )
+  // xEcs.New({
+  //   loadBalancer: {
+  //     targetGroupPort: 80,
+  //     isHttpsEnabled: false,
+  //     securityGroup: defaultSecurityGroup,
+  //   },
+  //   secretsManager: {
+  //     isEnabled: false,
+  //     variables: [],
+  //   },
+  //   ecr: {
+  //     imagePath: './src/services/ecs/app',
+  //   },
+  //   ecs: {
+  //     isEnabled: false,
+  //     cpu: 128,
+  //     memory: 512,
+  //     desiredCount: 1,
+  //     port: 80,
+  //   },
+  //   autoscaling: {
+  //     isEnabled: false,
+  //     minCapacity: 1,
+  //     maxCapacity: 10,
+  //     policies: [
+  //       {
+  //         type: `memory`,
+  //         policyType: 'TargetTrackingScaling',
+  //         predefinedMetricType: 'ECSServiceAverageMemoryUtilization',
+  //         targetValue: 80,
+  //         scaleInCooldown: 30,
+  //         scaleOutCooldown: 60,
+  //       },
+  //       {
+  //         type: `cpu`,
+  //         policyType: 'TargetTrackingScaling',
+  //         predefinedMetricType: 'ECSServiceAverageCPUUtilization',
+  //         targetValue: 70,
+  //         scaleInCooldown: 30,
+  //         scaleOutCooldown: 60,
+  //       },
+  //     ],
+  //   },
+  // })
 
-  new lambdaservice.Service(config, `${stack}-x`).new({
-    language: lambda.JS,
-    isFifo: false,
-    isProd: false,
-    isPublic: false,
-    variables: {
-      url: 'https://httpbin.dev/post',
-      token: '123456789',
-    },
-  })
+  // NOTE: Initialize new Lambda service called "x
+  // const xLambda = new lambdaservice.Service(config, stack, 'x')
+  // xLambda.New({
+  //   language: lambda.JS,
+  //   isFifo: true,
+  //   isProd: true,
+  //   isPublic: true,
+  //   variables: {
+  //     url: 'https://httpbin.dev/post',
+  //     token: '123456789',
+  //   },
+  //   archive: new pulumi.asset.FileArchive(
+  //     './src/services/lambda/function/app.zip'
+  //   ),
+  // })
+
+  // const name = 'string'
+  // const codepipelineRole = iam.NewCodePipelineRole(name)
+  // const codebuildRole = iam.NewCodeBuildRole(name)
+  // const pipeline = codepipeline.NewPipeline(
+  //   name,
+  //   codepipelineRole,
+  //   codebuildRole,
+  //   {
+  //     region: 'ap-southeast-1',
+  //     source: 'github',
+  //     deploymentTarget: 'ecs',
+  //     github: {
+  //       username: '',
+  //       repo: '',
+  //       token: '',
+  //     },
+  //   }
+  // )
+
+  // codepipeline.NewPipelineWebhook(name, pipeline, 'github', {
+  //   github: {
+  //     token: '',
+  //   },
+  // })
 }
 
 main()

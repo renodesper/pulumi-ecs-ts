@@ -1,5 +1,6 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as aws from '@pulumi/aws'
+import { arch } from 'os'
 
 const GO = 'go'
 const JS = 'js'
@@ -19,6 +20,7 @@ const NewFunction = (
   language: string,
   variables: pulumi.Input<{ [key: string]: pulumi.Input<string> }> | undefined,
   role: aws.iam.Role,
+  archive: pulumi.asset.FileArchive
 ): aws.lambda.Function => {
   const args: {
     name: string
@@ -32,7 +34,7 @@ const NewFunction = (
     name: name,
     role: role.arn,
     timeout: 900,
-    code: new pulumi.asset.FileArchive('./services/lambda/function/app.zip'),
+    code: archive,
     environment: {
       variables: variables,
     },
@@ -84,7 +86,7 @@ const NewEventSourceMapping = (
   name: string,
   queue: aws.sqs.Queue,
   fn: aws.lambda.Function,
-  batchSize: number,
+  batchSize: number
 ): aws.lambda.EventSourceMapping => {
   const args = {
     eventSourceArn: queue.arn,

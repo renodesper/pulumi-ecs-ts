@@ -1,9 +1,10 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as aws from '@pulumi/aws'
 
-import * as iam from '../../utils/iam'
-import * as lambda from '../../utils/lambda'
-import * as sqs from '../../utils/sqs'
+import * as iam from '../../utils/aws/iam'
+import * as lambda from '../../utils/aws/lambda'
+import * as sqs from '../../utils/aws/sqs'
+import * as iampolicydocument from '../../utils/aws/iampolicydocument'
 
 const AN_HOUR = 3600
 const FOUR_DAYS = 345600
@@ -18,20 +19,25 @@ type NewServiceArgs = {
     url: string
     token: string
   }
+  archive: pulumi.asset.FileArchive
 }
 
 class Service {
   config: pulumi.Config
+  stack: string
   name: string
+  serviceName: string
 
-  constructor(config: pulumi.Config, name: string) {
+  constructor(config: pulumi.Config, stack: string, name: string) {
     this.config = config
+    this.stack = stack
     this.name = name
+    this.serviceName = `${stack}-${name}`
   }
 
-  new(args: NewServiceArgs) {
+  New = async (args: NewServiceArgs) => {
     const tags = {
-      project: this.name,
+      project: this.serviceName,
     }
 
     if (!lambda.ALLOWED_LANGUAGES.includes(args.language || '')) {
@@ -46,11 +52,12 @@ class Service {
         visibilityTimeoutSeconds: AN_HOUR,
         tags: tags,
       }
+      const isDeadLetter = true
       const deadLetterQueue = sqs.NewQueue(
-        this.name,
+        this.serviceName,
         deadLetterQueueArgs,
-        true,
-        args.isFifo,
+        isDeadLetter,
+        args.isFifo
       )
 
       const maxReceiveCount = 5
@@ -73,36 +80,30 @@ class Service {
       queueArgs.redrivePolicy = redrivePolicy
     }
 
-    const queue = sqs.NewQueue(this.name, queueArgs, false, args.isFifo)
+    const isDeadLetter = false
+    const queue = sqs.NewQueue(
+      this.serviceName,
+      queueArgs,
+      isDeadLetter,
+      args.isFifo
+    )
 
-    const role = iam.NewLambdaRole(this.name)
+    const role = iam.NewLambdaRole(this.serviceName)
 
-    const rolePolicyName = `${this.name}-inline-policy`
-    const policyDocument: aws.iam.PolicyDocument = {
-      Version: '2012-10-17',
-      Statement: [
-        {
-          Effect: 'Allow',
-          Action: [
-            'sqs:GetQueueAttributes',
-            'sqs:ReceiveMessage',
-            'sqs:DeleteMessage',
-          ],
-          Resource: '*',
-        },
-      ],
-    }
-    iam.NewLambdaRolePolicy(role, rolePolicyName, policyDocument)
+    const rolePolicyName = `${this.serviceName}-inline-policy`
+    const policyDocument = iampolicydocument.LambdaTriggerPolicyDocument()
+    iam.NewLambdaRolePolicy(rolePolicyName, role, policyDocument)
 
     const fn = lambda.NewFunction(
-      this.name,
+      this.serviceName,
       args.language,
       args.variables,
       role,
+      args.archive
     )
 
     const batchSize = 1
-    lambda.NewEventSourceMapping(this.name, queue, fn, batchSize)
+    lambda.NewEventSourceMapping(this.serviceName, queue, fn, batchSize)
 
     let fnUrl
     if (args.isPublic) {

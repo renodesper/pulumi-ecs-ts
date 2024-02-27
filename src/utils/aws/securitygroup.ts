@@ -16,7 +16,7 @@ const NewSecurityGroup = (
     cidrBlocks?: Array<string>
     securityGroups?: Array<string>
   }>,
-  description?: string,
+  description?: string
 ) => {
   return new aws.ec2.SecurityGroup(name, {
     name: name,
@@ -58,14 +58,14 @@ const NewDefaultSecurityGroup = (securityGroupId?: string) => {
     'default-load-balancer-sg',
     ingress,
     egress,
-    description,
+    description
   )
 }
 
 // TODO: Add security group for ECS instances (not working)
 const NewEcsSecurityGroup = (
-  vpc: Promise<aws.ec2.GetVpcResult>,
-  securityGroup: aws.ec2.SecurityGroup,
+  vpc: aws.ec2.GetVpcResult,
+  securityGroup: aws.ec2.SecurityGroup
 ) => {
   const ingress = [
     {
@@ -78,7 +78,7 @@ const NewEcsSecurityGroup = (
       fromPort: 22,
       toPort: 22,
       protocol: 'tcp',
-      securityGroups: [vpc.then(vpc => vpc.cidrBlock)], // Allow traffic in from the same VPC
+      securityGroups: [vpc.cidrBlock], // Allow traffic in from the same VPC
     },
   ]
   const egress = [

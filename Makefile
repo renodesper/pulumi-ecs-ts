@@ -25,7 +25,7 @@ stack.prod.destroy:
 .PHONY: lambda.build.go
 lambda.build.go:
 	rm -f services/lambda/function/app.zip && \
-		cd services/lambda/function/go && \
+		cd src/services/lambda/function/go && \
 		GOOS=linux GOARCH=amd64 $(GOCMD) build -o main . && \
 		zip ../app.zip main && \
 		rm -f main
@@ -33,13 +33,13 @@ lambda.build.go:
 .PHONY: lambda.build.js
 lambda.build.js:
 	rm -f services/lambda/function/app.zip && \
-		cd services/lambda/function/js && \
+		cd src/services/lambda/function/js && \
 		zip -r ../app.zip .
 
 .PHONY: lambda.build.py
 lambda.build.py:
 	rm -f services/lambda/function/app.zip && \
-		cd services/lambda/function/python && \
+		cd src/services/lambda/function/python && \
 		pip3 install requests -t . && \
 		zip -r ../app.zip .
 

@@ -1,4 +1,12 @@
 {
+  "baseUrl": "./src",
+  "paths": {
+    "@services/*": ["services/*"],
+    "@utils/*": ["utils/*"]
+  },
+  "files": ["index.ts"],
+  "include": ["src/**/*.ts"],
+  "exclude": ["node_modules"],
   "compilerOptions": {
     "strict": true,
     "outDir": "bin",
@@ -8,11 +16,8 @@
     "sourceMap": true,
     "experimentalDecorators": true,
     "pretty": true,
+    "forceConsistentCasingInFileNames": true,
     "noFallthroughCasesInSwitch": true,
-    "noImplicitReturns": true,
-    "forceConsistentCasingInFileNames": true
-  },
-  "files": ["index.ts"],
-  "include": ["utils"],
-  "exclude": ["node_modules"]
+    "noImplicitReturns": true
+  }
 }

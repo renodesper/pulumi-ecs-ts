@@ -15,7 +15,7 @@
     "sourceType": "module"
   },
   "rules": {
-    "@typescript-eslint/no-unused-vars": "error",
+    "eslint@typescript-eslint/no-unused-vars": "never",
     "@typescript-eslint/consistent-type-definitions": ["error", "type"]
   }
 }
