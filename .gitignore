@@ -1,5 +1,5 @@
-/bin/
-/node_modules/
-/services/lambda/function/app.zip
+**/bin/
+**/function/app.zip
+**/node_modules/
 Pulumi.dev.yaml
 Pulumi.yaml
