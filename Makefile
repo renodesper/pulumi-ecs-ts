@@ -26,9 +26,9 @@ stack.prod.destroy:
 lambda.build.go:
 	rm -f services/lambda/function/app.zip && \
 		cd src/services/lambda/function/go && \
-		GOOS=linux GOARCH=amd64 $(GOCMD) build -o main . && \
-		zip ../app.zip main && \
-		rm -f main
+		GOOS=linux GOARCH=arm64 $(GOCMD) build -o bootstrap . && \
+		zip ../app.zip bootstrap && \
+		rm -f bootstrap
 
 .PHONY: lambda.build.js
 lambda.build.js:

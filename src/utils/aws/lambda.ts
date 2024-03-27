@@ -1,15 +1,14 @@
 import * as pulumi from '@pulumi/pulumi'
 import * as aws from '@pulumi/aws'
-import { arch } from 'os'
 
 const GO = 'go'
 const JS = 'js'
 const PYTHON = 'python'
 const ALLOWED_LANGUAGES = [GO, JS, PYTHON]
 
-const GO_RUNTIME = 'go1.x'
-const JS_RUNTIME = 'nodejs18.x'
-const PYTHON_RUNTIME = 'python3.11'
+const GO_RUNTIME = 'provided.al2023'
+const JS_RUNTIME = 'nodejs20.x'
+const PYTHON_RUNTIME = 'python3.12'
 
 const GO_HANDLER = 'main'
 const JS_HANDLER = 'index.handler'
@@ -23,6 +22,7 @@ const NewFunction = (
   archive: pulumi.asset.FileArchive
 ): aws.lambda.Function => {
   const args: {
+    architectures: pulumi.Input<pulumi.Input<string>[]>
     name: string
     role: pulumi.Output<string>
     timeout: number
@@ -31,6 +31,7 @@ const NewFunction = (
     runtime?: string
     handler?: string
   } = {
+    architectures: ['arm64'], // x8664 and arm64
     name: name,
     role: role.arn,
     timeout: 900,

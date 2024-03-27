@@ -15,3 +15,7 @@ This project was created to accommodate the need for a bootstrap structure for m
 
 - Read [Prerequisites](docs/PREREQUISITES.md).
 - Then, read [Development Guide](docs/DEVELOPMENT_GUIDE.md).
+
+## Example
+
+- Read [Example](docs/EXAMPLE.md).
