@@ -15,7 +15,7 @@ type NewServiceArgs = {
   isFifo: boolean
   isProd: boolean
   isPublic: boolean
-  variables: {
+  variables?: {
     url: string
     token: string
   }

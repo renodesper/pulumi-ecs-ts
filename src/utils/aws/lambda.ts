@@ -6,7 +6,7 @@ const JS = 'js'
 const PYTHON = 'python'
 const ALLOWED_LANGUAGES = [GO, JS, PYTHON]
 
-const GO_RUNTIME = 'provided.al2023'
+const GO_RUNTIME = 'provided.al2'
 const JS_RUNTIME = 'nodejs20.x'
 const PYTHON_RUNTIME = 'python3.12'
 

@@ -34,7 +34,7 @@ service.New({
   },
   ecs: {
     isEnabled: false,
-    cpu: 128,
+    cpu: 256,
     memory: 512,
     desiredCount: 1,
     port: 80,

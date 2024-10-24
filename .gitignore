@@ -1,5 +1,9 @@
 **/bin/
 **/function/app.zip
 **/node_modules/
+**/vendor/
 Pulumi.dev.yaml
 Pulumi.yaml
+
+**/.DS_Store
+**/.env
