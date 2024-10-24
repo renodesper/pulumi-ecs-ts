@@ -15,10 +15,7 @@ type NewServiceArgs = {
   isFifo: boolean
   isProd: boolean
   isPublic: boolean
-  variables?: {
-    url: string
-    token: string
-  }
+  variables?: pulumi.Input<{ [key: string]: pulumi.Input<string> }> | undefined
   archive: pulumi.asset.FileArchive
 }
 
